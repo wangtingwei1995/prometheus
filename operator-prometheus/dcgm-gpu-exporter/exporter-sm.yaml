@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gpu-metrics  #决定job name 需要和grafana里模板定义里得一致
+  labels:
+    app: gpu-metrics
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: gpu-metrics
+  namespaceSelector:
+    matchNames:
+    - monitoring
+  endpoints:
+  - port: http-metrics   #exporter service得名字
+    path: /gpu/metrics
+    interval: 30s

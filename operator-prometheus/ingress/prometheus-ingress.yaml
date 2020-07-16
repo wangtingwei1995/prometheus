@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: monitor-ingress
+  namespace: monitoring
+######################添加annotation修改nginx配置信息，解决上传文件413 too large限制################
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "102400m"
+###########################################################################
+spec:
+#  tls:
+#  - hosts:
+#    - prometheus.seetatech.com
+#    - grafana.seetatech.com
+#    secretName: xxx
+  rules:
+  - host: prometheus.seetatech.com
+    http:
+      paths:
+      - backend:
+          serviceName: prometheus-operated 
+          servicePort: 9090
+  - host: grafana.seetatech.com
+    http:
+      paths:
+      - backend:
+          serviceName: grafana
+          servicePort: 3000
+  

@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: node-gpu-metrics-exporter
+  namespace: monitoring
+spec:
+  template:
+    metadata:
+      labels:
+        app: node-gpu-metrics-exporter
+      name: node-gpu-metrics-exporter
+    spec:
+      nodeSelector:
+        gpu: "true"
+      hostNetwork: true
+      containers:
+      - image: hub.kce.ksyun.com/kpl_k8s/gpu-metrics-exporter:latest #172.16.18.102:8443/library/pod-gpu-metrics-exporter:v1.0.1
+        name: node-nvidia-gpu-metrics-exporter   
+        ports:
+        - name: metrics
+          containerPort: 9400
+          hostPort: 9400
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+        volumeMounts:
+        - name: node-gpu-resources
+          readOnly: true
+          mountPath: /var/lib/kubelet/pod-resources
+        - name: device-metrics
+          readOnly: true
+          mountPath: /run/prometheus
+      - image: hub.kce.ksyun.com/kpl_k8s/dcgm-exporter:latest #172.16.18.102:8443/library/prometheus-dcgm-exporter:1.4.7
+        name: nvidia-dcgm-exporter
+        securityContext:
+          runAsNonRoot: false
+          runAsUser: 0
+        volumeMounts:
+        - name: device-metrics
+          mountPath: /run/prometheus
+
+      volumes:
+      - name: node-gpu-resources
+        hostPath:
+          path: /var/lib/kubelet/pod-resources
+      - name: device-metrics
+        emptyDir:
+          medium: Memory

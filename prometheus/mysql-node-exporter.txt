@@ -1,0 +1,1 @@
+./mysqld_exporter -config.my-cnf=.my.cnf
